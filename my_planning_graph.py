@@ -149,8 +149,22 @@ class PlanningGraph:
 		--------
 		Russell-Norvig 10.3.1 (3rd Edition)
 		"""
-		# TODO: implement this function
-		raise NotImplementedError
+		level_sum = 0
+		self.fill()
+		remaining_goals = self.goal.copy()
+		for i, literal_layer in enumerate(self.literal_layers):
+			if len(remaining_goals) == 0:
+				return level_sum
+			new_goals = set()
+			for goal in remaining_goals:
+				if goal in literal_layer:
+					new_goals.add(goal)
+					level_sum += i
+			remaining_goals -= new_goals
+			
+		return level_sum
+			
+			
 
 	def h_maxlevel(self):
 		""" Calculate the max level heuristic for the planning graph
@@ -179,8 +193,20 @@ class PlanningGraph:
 		-----
 		WARNING: you should expect long runtimes using this heuristic with A*
 		"""
-		# TODO: implement maxlevel heuristic
-		raise NotImplementedError
+		max_level = 0
+		self.fill()
+		remaining_goals = self.goal.copy()
+		for i, literal_layer in enumerate(self.literal_layers):
+			if len(remaining_goals) == 0:
+				return max_level
+			new_goals = set()
+			for goal in remaining_goals:
+				if goal in literal_layer:
+					new_goals.add(goal)
+					max_level = i
+			remaining_goals -= new_goals
+			
+		return max_level
 
 	def h_setlevel(self):
 		""" Calculate the set level heuristic for the planning graph
@@ -204,9 +230,19 @@ class PlanningGraph:
 		-----
 		WARNING: you should expect long runtimes using this heuristic on complex problems
 		"""
-		# TODO: implement setlevel heuristic
-		raise NotImplementedError
-
+		set_level = 0
+		si_all_not_mutex = False
+		self.fill()
+		for i, literal_layer in enumerate(self.literal_layers):
+			if self.goal.issubset(literal_layer):
+				is_all_not_mutex = True
+				for goal1, goal2 in combinations(self.goal, 2):
+					if literal_layer.is_mutex(goal1, goal2):
+						is_all_not_mutex = False
+						break
+				if is_all_not_mutex:
+					return i
+		return set_level
 	##############################################################################
 	#					  DO NOT MODIFY CODE BELOW THIS LINE					 #
 	##############################################################################
