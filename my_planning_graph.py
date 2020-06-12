@@ -193,20 +193,18 @@ class PlanningGraph:
 		-----
 		WARNING: you should expect long runtimes using this heuristic with A*
 		"""
-		max_level = 0
-		self.fill()
-		remaining_goals = self.goal.copy()
-		for i, literal_layer in enumerate(self.literal_layers):
-			if len(remaining_goals) == 0:
-				return max_level
-			new_goals = set()
-			for goal in remaining_goals:
-				if goal in literal_layer:
-					new_goals.add(goal)
-					max_level = i
-			remaining_goals -= new_goals
-			
-		return max_level
+		i = 0
+		while not self._is_leveled:
+			all_goals_met = True
+			for goal in self.goal:
+				if goal not in self.literal_layers[-1]:
+					all_goals_met = False
+			if all_goals_met:
+				return i
+			else:
+				self._extend()
+			i += 1
+
 
 	def h_setlevel(self):
 		""" Calculate the set level heuristic for the planning graph
