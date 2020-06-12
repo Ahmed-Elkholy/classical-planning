@@ -150,17 +150,20 @@ class PlanningGraph:
 		Russell-Norvig 10.3.1 (3rd Edition)
 		"""
 		level_sum = 0
-		self.fill()
+		i = 0
 		remaining_goals = self.goal.copy()
-		for i, literal_layer in enumerate(self.literal_layers):
-			if len(remaining_goals) == 0:
-				return level_sum
+		while not self._is_leveled:
 			new_goals = set()
 			for goal in remaining_goals:
-				if goal in literal_layer:
+				if goal in self.literal_layers[-1]:
 					new_goals.add(goal)
 					level_sum += i
 			remaining_goals -= new_goals
+			if len(remaining_goals) == 0:
+				return level_sum
+			else:
+				self._extend()
+			i += 1
 			
 		return level_sum
 			
@@ -199,6 +202,7 @@ class PlanningGraph:
 			for goal in self.goal:
 				if goal not in self.literal_layers[-1]:
 					all_goals_met = False
+					break
 			if all_goals_met:
 				return i
 			else:
@@ -228,19 +232,19 @@ class PlanningGraph:
 		-----
 		WARNING: you should expect long runtimes using this heuristic on complex problems
 		"""
-		set_level = 0
-		si_all_not_mutex = False
-		self.fill()
-		for i, literal_layer in enumerate(self.literal_layers):
-			if self.goal.issubset(literal_layer):
+		i = 0
+		while not self._is_leveled:
+			if self.goal.issubset(self.literal_layers[-1]):
 				is_all_not_mutex = True
 				for goal1, goal2 in combinations(self.goal, 2):
-					if literal_layer.is_mutex(goal1, goal2):
+					if self.literal_layers[-1].is_mutex(goal1, goal2):
 						is_all_not_mutex = False
 						break
 				if is_all_not_mutex:
 					return i
-		return set_level
+			self._extend()
+			i += 1
+		return i
 	##############################################################################
 	#					  DO NOT MODIFY CODE BELOW THIS LINE					 #
 	##############################################################################
